@@ -11,10 +11,10 @@ using namespace std;
 void adjust_prof_for_solid_angle(double prof[90]);
 
 vector bump_soft_sphere(vector vel, double deltatheta);
-	// Produces a random small vector with which to bump vel.
+// Produces a random small vector with which to bump vel.
 
 double pick_initial_state(vector &position, vector &velocity, 
-				double radius, double length, double nnot, double nprime, double sigma);
+                          double radius, double length, double nnot, double nprime, double sigma);
 // Picks an initial state from off walls, from back of tube, 
 // or from a hard sphere collision.  Returns the probability 
 // adjustment for this state occuring.
@@ -36,42 +36,42 @@ extern double sines[90];    // Holds the average sine for each bin.
 
 /*==============================Main Iteratin Methods==========================================*/
 void Profile(double db_prof[90], double prof[90], double radius, double length,
-			 double sigma, double sigmaExtra, double nnot, double nprime, double &num_counted,
-			 unsigned long &num_tried, long num_more,
-			 double costheta_for_detector, long exp_prof[90]) {
-	vector position, velocity;
-	// Note: Velocity should always be normalized!
-	// Note: prof IS floating point.  It holds probabilities of occuring. 
-    // Therefore num_counted must be floating point as well.
-	double deltatheta, n, rsqr, prob, dpos;
-	do{
-		while ((--num_more > 0) || !num_counted) {
-			dpos = radius*.5;
-			++(num_tried);
-			prob = pick_initial_state(position, velocity, radius, length, nnot, nprime, 
-									sigmaExtra*.5/(1.354*1.354)/*sigma*/);
-										// sigmaExtra*.5 in order to deal with CM problem with hard sphere scattering.
-										// /(1.354*1.354) in order to get normal total cross sxn's back.
-			rsqr = 0;
-			while ( (position.z > 0) /*&& (velocity.z < 0)*/ && (rsqr < radius*radius) ) { //while it's in the tube
-					dpos = radius*0.5;
-					n = nnot + nprime*position.z;	//get the number density at the particles point
+             double sigma, double sigmaExtra, double nnot, double nprime, double &num_counted,
+             unsigned long &num_tried, long num_more,
+             double costheta_for_detector, long exp_prof[90]) {
+  vector position, velocity;
+  // Note: Velocity should always be normalized!
+  // Note: prof IS floating point.  It holds probabilities of occuring. 
+  // Therefore num_counted must be floating point as well.
+  double deltatheta, n, rsqr, prob, dpos;
+  do{
+    while ((--num_more > 0) || !num_counted) {
+      dpos = radius*.5;
+      ++(num_tried);
+      prob = pick_initial_state(position, velocity, radius, length, nnot, nprime, 
+                                sigmaExtra*.5/(1.354*1.354)/*sigma*/);
+      // sigmaExtra*.5 in order to deal with CM problem with hard sphere scattering.
+      // /(1.354*1.354) in order to get normal total cross sxn's back.
+      rsqr = 0;
+      while ( (position.z > 0) /*&& (velocity.z < 0)*/ && (rsqr < radius*radius) ) { //while it's in the tube
+        dpos = radius*0.5;
+        n = nnot + nprime*position.z;	//get the number density at the particles point
 				
-					while (nprime/n > .1/dpos) {	// Never let n drop by more than 10%.
-						dpos *= 0.1;
-					}
+        while (nprime/n > .1/dpos) {	// Never let n drop by more than 10%.
+          dpos *= 0.1;
+        }
 				
 				
-					//Soft Sphere
-					deltatheta = mysqrt(n*sigmaExtra*dpos);
-					//if(deltatheta > .1){
-						//dpos *= .5;
-						//deltatheta *= .5;
-					//}
-					//while(deltatheta < .06) {
-						//dpos *= 2;
-						//deltatheta *= 1.414214;
-					//}
+        //Soft Sphere
+        deltatheta = mysqrt(n*sigmaExtra*dpos);
+        //if(deltatheta > .1){
+        //dpos *= .5;
+        //deltatheta *= .5;
+        //}
+        //while(deltatheta < .06) {
+        //dpos *= 2;
+        //deltatheta *= 1.414214;
+        //}
 				
 					position += velocity*dpos;
 					
