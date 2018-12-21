@@ -1,6 +1,8 @@
 \documentclass{article}
 
+\usepackage{color}
 \usepackage{amsmath}
+\newcommand\fixme[1]{\textcolor{red}{\sc #1}}
 
 \title{How gasbeam works}
 \author{David Roundy}
@@ -18,27 +20,22 @@ an unknown, but assumed to be a linear function of $z$.  We are of
 course wanting to find the angular distribution of the gas exiting the
 tube.
 
+\fixme{Add explanation why we choose flow rate rather than input pressure as a parameter.}
 
 \section{Overall strategy}
 The code makes one huge simplification relative to a straightforward
 Monte Carlo simulation.  \emph{We only simulate the trajectory of an
-  atom after its last ``hard'' collision!} By \emph{hard} collision, I
-mean a collision with a wall or a ``hard-sphere'' collision with
-another atom.  These collisions effectively randomize the direction of
-the atom, erasing any effect of previous collisions.  We do
-incorporate ``soft sphere'' collisions, which have only a small effect
-on the direction of the atom.
+  atom after its last collision with a wall!} Wall collisions effectively randomize the direction of
+the atom, erasing any effect of previous collisions.
 
 Once we have simulated enough trajectories (given the linear density
 profile), we can predict the flow rate of the gas.  We then adjust the
-density profile to match the desired value.  However, since the linear
-density function has two parameters (an ``exit density'' and a
-gradient), it's a bit more complicated.
+density profile to match the desired value.  \fixme{add bit here about the relationship between exit density and gradient.}
 \begin{enumerate}
 \item Given a gas density profile along the tube, we simulate an
   ensemble of final trajectories.  We collect appropriate statistics.
 \item From these statistics, we must compute flow rate and correct the
-  density profile.
+  exit density.
 \end{enumerate}
 
 \subsection{Simulating a atom trajectory}
@@ -46,66 +43,56 @@ When we simulate a trajectory, we have atoms always travel with the
 mean speed of the atom in the gas.  This is obviously not true, but
 shouldn't bias the results.
 
-We begin an atom's trajectory immediately after a collision, which
-could either be a collision with a wall, a collision with the back of
+We begin an atom's trajectory immediately after a wall collision, which could be a collision with the back of
 the tube (which is somewhat artificial, and could be omitted if the
-tube were taken to be long enough) or a collision with another
-atom.  The rate of collisions with a given area $dA$ of the
+tube were taken to be long enough).  The rate of collisions with a given area $dA$ of the
 wall is equal to
 \begin{align}
   dP_{\text{wall}} &= nvdA
 \end{align}
 where $n$ is the number density, $v$ is the mean speed, and $dA$ is
 the area of the portion of wall.  We include a ``fake'' wall at the
-back of the tube.  The rate of atom-atom collisions in a small volume
-of gas is given by
-\begin{align}
-  dP_{\text{hard-sphere}} &= n^2\sigma_{HS}v dV
-\end{align}
-where $\sigma_{HS}$ is the hard-sphere cross-section and $dV$ is the
-small volume. You can think of this as coming from the total area
-available to be colided with being $dA_{HS} = n\sigma_{HS}dV$.
+back of the tube.
 
-We randomly sample final collisions in proportion to these rates.  For
+We randomly sample locations of final wall collisions in proportion to these rates.  For
 each final collision, we then pick an initial direction.
 
 \subsubsection{Picking the direction}
-In the case of a hard-sphere collision, the direction is random.
-Technically, the velocity is random after a hard-sphere scattering
-only in the center-of-mass reference frame, but we assume that the
-center-of-mass reference frame is itself random.
-
-For a wall scattering (assuming diffuse scattering), the probability
+For diffuse scattering off a wall, the probability
 of scattering direction per solid angle is proportional to the
 $\cos\theta$ where $\theta$ is the angle from the normal.
 
-In practice, we do not consider any ``backwards-traveling'' states,
+In practice, we omit all ``backwards-traveling'' states (in terms of sign of the $\hat z$ component of their velocity),
 under the assumption that these states will not exit the tube before
 undergoing another collision.
 
-\subsubsection{Propogating the atom}
+\subsubsection{Propagating the atom}
 Once we have its initial velocity (after its final randomizing
 collision), we just let the atom travel step by step while undergoing
-small randomizing collisions.  We travel by a small distance $d\ell$
-which is chosen to be no greater than half a hard-sphere radius and
+randomizing collisions.  We assume that each collision has only a small effect on the direction of the atom.  This may seem odd given that collisions are often viewed as hard-sphere collisions, and hard-sphere collisions result in random directions in the center of mass frame.  But the center of mass frame is biased by the velocity of the scattering particle, resulting in a strongly forward-peaked post-collision velocity distribution.  Given that each collision has a small effect, we apply the central limit theorem to justify picking a fixed change of direction.
+
+We let the atom travel by a small distance $d\ell$
+which is chosen to be no greater than half the radius of the tube and
 furthermore to be small enough that the density changes by less than
 10\%.  At each step, we scatter the direction of the atom by a change
 in angle
 \begin{align}
-  \Delta\theta &= \sqrt{n\sigma_{SS}d\ell}
+  \Delta\theta &= \sqrt{n\Sigma d\ell}
 \end{align}
-where $\sigma_{SS}$ is called \verb!sigmaExtra! in the code, and I
-have not yet figured out what it is.  Scattering by a fixed angle is
-somewhat hokey, but thanks to the central limit theorem
-this should not affect the answer so long as our RMS change in angle
-is correctly chosen, and we make sure we are adding together many
-small scatters.  If in the process of this propogation hits a wall or
+where $\Sigma$ is defined by
+\begin{align}
+    \Sigma \equiv \int \theta^2 \frac{d\sigma}{d\Omega} d\Omega
+\end{align}
+where $\theta$ is the change in angle measured in the lab frame, and $\frac{d\sigma}{d\Omega}$ is the differential cross section.  If in the process of this propogation hits a wall or
 exits the tube then we are done.  We ignore the case where it hits a
 wall.
 
-If it exited the tube, then we add it to our histogram of detected
-atoms.  However, while being propogated, it should attenuate by a
-factor of $e^{-n\sigma_{HS}d\ell}$ at each step.  This is to account
-for the probability that it undergoes a hard sphere collision.
+If the atom exited the tube, then we add it to our histogram of detected
+atoms.
+
+\fixme{Discuss where we get $\Sigma$... my notes suggest we get it from tabulated hard-sphere radii, but I do not know what might have changed since then.}
+
+\subsubsection{Computing the flow rate}
+\fixme{Add explanation here.}
 
 \end{document}
