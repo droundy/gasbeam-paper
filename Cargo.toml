@@ -1,0 +1,18 @@
+[package]
+name = "gas-beam"
+version = "0.1.0"
+authors = ["droundy <roundyd@physics.oregonstate.edu>"]
+edition = "2018"
+
+[dependencies]
+
+dimensioned = { version = "0.7.0", features=["serde"] }
+serde = "1.0"
+serde_derive = "1.0"
+serde_yaml = "0.7"
+clapme = "0.1.13"
+
+vector3d = "0.1.7"
+rand_core = "0.2.1"
+rand = "0.5.4"
+tempfile = "3.0.3"

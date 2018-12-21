@@ -7,3 +7,6 @@
 *.txt
 *.txt.fr
 .#*
+
+/target
+**/*.rs.bk
