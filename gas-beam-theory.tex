@@ -83,16 +83,23 @@ where $\Sigma$ is defined by
 \begin{align}
     \Sigma \equiv \int \theta^2 \frac{d\sigma}{d\Omega} d\Omega
 \end{align}
-where $\theta$ is the change in angle measured in the lab frame, and $\frac{d\sigma}{d\Omega}$ is the differential cross section.  If in the process of this propogation hits a wall or
+where $\theta$ is the change in angle measured in the lab frame, and $\frac{d\sigma}{d\Omega}$ is the differential cross section.  We estimate $\Sigma$ from the hard-sphere cross section of a species by the expression
+\begin{align}
+    \Sigma = (1.354)^2\sigma_{HS}
+\end{align}
+where the numerical factor was found from a Monte Carlo simulation simulation of hard-sphere collisions with an atom moving in a random direction.
+If in the process of this propagation the atom hits a wall or
 exits the tube then we are done.  We ignore the case where it hits a
 wall.
 
 If the atom exited the tube, then we add it to our histogram of detected
 atoms.
 
-\fixme{Discuss where we get $\Sigma$... my notes suggest we get it from tabulated hard-sphere radii, but I do not know what might have changed since then.}
-
 \subsubsection{Computing the flow rate}
-\fixme{Add explanation here.}
+The gas density at the exit of the tube ($n_0$) is related to the derivative of the gas density $n'$ by
+\begin{align}
+    n_0 &= D n'
+\end{align}
+where $D$ is the diameter of the tube.  \fixme{I am sure there is a good reason for this... but not sure what it is.}  Thus given the exit density and the above simulation, we can compute the flow rate through the tube.  To simulate the profile for a given flow rate, an initial guess is made for the exit density, and by running successive simulations computing the flow rate, we can solve for the exit density that leads to the desired flow rate.
 
 \end{document}
